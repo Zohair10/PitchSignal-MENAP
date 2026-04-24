@@ -89,4 +89,53 @@ export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
     "Fintech regulatory awareness",
     "Investor preference for verified traction over waitlists",
   ],
+  aiInsights: {
+    startupSummary: "PayBridge is a cross-border payment platform targeting Pakistani freelancers and SMBs who receive payments from UAE-based clients, addressing slow and expensive international transfer workflows.",
+    founderProfile: "First-time fintech founder with strong understanding of the UAE-to-Pakistan remittance corridor",
+    keyClaims: [
+      "Targeting Pakistani freelancers receiving international payments",
+      "Focused on UAE-to-Pakistan payment corridor",
+      "Has a waitlist of users",
+      "Asking $300K in funding",
+    ],
+    sectorCategory: "Cross-border fintech / Remittance",
+    stageAssessment: "Claims Pre-seed stage, which aligns with having a waitlist but no live transactions. Stage assessment matches.",
+    strengths: [
+      "Clear pain point with measurable market",
+      "Focused geographic wedge (UAE-to-Pakistan)",
+      "Addresses a growing freelancer economy",
+    ],
+    weaknesses: [
+      "No live transaction data to validate demand",
+      "Regulatory path not addressed",
+      "Waitlist-only traction is insufficient for investors",
+    ],
+    marketObservations: [
+      "Pakistan has 2M+ freelancers, a growing export market",
+      "UAE is a major source of remittances to Pakistan",
+      "Cross-border payments face SBP regulatory requirements",
+    ],
+    tractionObservations: [
+      "Waitlist shows demand intent but not transaction behavior",
+      "No revenue or pilot data to validate willingness to pay",
+      "Missing repeat usage or retention signals",
+    ],
+    regionalRedFlags: [
+      "No regulatory awareness for SBP licensing requirements",
+      "Waitlist traction doesn't meet MENAP investor expectations for payment products",
+      "Broad corridor claim creates compliance risk perception",
+    ],
+    missingFields: ["revenue", "useOfFunds"],
+    extractedFields: {
+      sector: "Fintech",
+      stage: "Pre-seed",
+      oneLinePitch: "PayBridge helps Pakistani freelancers receive international payments faster",
+      problem: "Pakistani freelancers face slow, expensive international payment workflows",
+      solution: "A lower-friction payment platform built for the UAE-to-Pakistan corridor",
+      targetCustomer: "Pakistani freelancers and SMBs receiving international payments",
+      businessModel: "Transaction-based fees on cross-border payments",
+      traction: "Waitlist of users signed up",
+      fundingAsk: "$300K",
+    },
+  },
 };

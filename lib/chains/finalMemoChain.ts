@@ -53,6 +53,26 @@ Return ONLY the JSON object.`,
 
   return {
     ...state,
-    finalReport: result,
+    finalReport: {
+      ...result,
+      aiInsights: {
+        startupSummary: state.intakeProfile?.startupSummary ?? "",
+        founderProfile: state.intakeProfile?.founderProfile ?? "",
+        keyClaims: state.intakeProfile?.keyClaims ?? [],
+        sectorCategory: state.intakeProfile?.sectorCategory ?? "",
+        stageAssessment: state.intakeProfile?.stageAssessment ?? "",
+        strengths: state.storyReview?.strengths ?? [],
+        weaknesses: state.storyReview?.weaknesses ?? [],
+        marketObservations: state.marketTractionReview?.marketObservations ?? [],
+        tractionObservations: state.marketTractionReview?.tractionObservations ?? [],
+        regionalRedFlags: state.marketTractionReview?.regionalRedFlags ?? [],
+        missingFields: state.intakeProfile?.missingFields ?? [],
+        extractedFields: state.intakeProfile?.extractedFields
+          ? Object.fromEntries(
+              Object.entries(state.intakeProfile.extractedFields).filter(([, v]) => v)
+            )
+          : undefined,
+      },
+    },
   };
 }

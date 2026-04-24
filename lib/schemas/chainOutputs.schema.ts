@@ -7,6 +7,20 @@ export const IntakeOutputSchema = z.object({
   keyClaims: z.array(z.string()),
   sectorCategory: z.string(),
   stageAssessment: z.string(),
+  extractedFields: z.object({
+    sector: z.string().optional(),
+    stage: z.string().optional(),
+    oneLinePitch: z.string().optional(),
+    problem: z.string().optional(),
+    solution: z.string().optional(),
+    targetCustomer: z.string().optional(),
+    businessModel: z.string().optional(),
+    traction: z.string().optional(),
+    revenue: z.string().optional(),
+    fundingAsk: z.string().optional(),
+    useOfFunds: z.string().optional(),
+  }),
+  missingFields: z.array(z.string()),
 });
 
 export type IntakeOutput = z.infer<typeof IntakeOutputSchema>;

@@ -43,6 +43,21 @@ export const EvaluationReportSchema = z.object({
   }),
 
   regionalSignalsUsed: z.array(z.string()),
+
+  aiInsights: z.object({
+    startupSummary: z.string(),
+    founderProfile: z.string(),
+    keyClaims: z.array(z.string()),
+    sectorCategory: z.string(),
+    stageAssessment: z.string(),
+    strengths: z.array(z.string()),
+    weaknesses: z.array(z.string()),
+    marketObservations: z.array(z.string()),
+    tractionObservations: z.array(z.string()),
+    regionalRedFlags: z.array(z.string()),
+    missingFields: z.array(z.string()),
+    extractedFields: z.record(z.string(), z.string()).optional(),
+  }).optional(),
 });
 
 export type EvaluationReport = z.infer<typeof EvaluationReportSchema>;

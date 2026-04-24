@@ -73,6 +73,44 @@ export function buildMarkdownReport(report: EvaluationReport): string {
   lines.push("---");
   lines.push("");
 
+  // AI Insights section
+  if (report.aiInsights) {
+    lines.push("## AI Analysis Insights");
+    lines.push("");
+
+    if (report.aiInsights.missingFields.length > 0) {
+      lines.push("### Missing Details");
+      lines.push("Your pitch is missing these key details:");
+      report.aiInsights.missingFields.forEach((f) => lines.push(`- ${f}`));
+      lines.push("");
+    }
+
+    lines.push("### Stage Assessment");
+    lines.push(report.aiInsights.stageAssessment);
+    lines.push("");
+
+    lines.push("### Key Claims Extracted");
+    report.aiInsights.keyClaims.forEach((c) => lines.push(`- ${c}`));
+    lines.push("");
+
+    lines.push("### Strengths");
+    report.aiInsights.strengths.forEach((s) => lines.push(`- ${s}`));
+    lines.push("");
+
+    lines.push("### Weaknesses");
+    report.aiInsights.weaknesses.forEach((w) => lines.push(`- ${w}`));
+    lines.push("");
+
+    if (report.aiInsights.regionalRedFlags.length > 0) {
+      lines.push("### Regional Red Flags");
+      report.aiInsights.regionalRedFlags.forEach((r) => lines.push(`- ${r}`));
+      lines.push("");
+    }
+
+    lines.push("---");
+    lines.push("");
+  }
+
   lines.push("## Regional Signals Used");
   lines.push("");
   report.regionalSignalsUsed.forEach((s) => lines.push(`- ${s}`));

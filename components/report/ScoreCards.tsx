@@ -1,6 +1,8 @@
 "use client";
 
-import { Progress } from "@/components/ui/progress";
+import { motion, useReducedMotion } from "framer-motion";
+import { AnimatedScoreRing } from "@/components/shared/AnimatedScoreRing";
+import { BarChart3 } from "lucide-react";
 
 interface Scores {
   storyClarity: number;
@@ -13,73 +15,51 @@ interface ScoreCardsProps {
   overallScore: number;
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return "text-green-400";
-  if (score >= 60) return "text-yellow-400";
-  return "text-red-400";
-}
-
-function getBarColor(score: number): string {
-  if (score >= 80) return "bg-green-500";
-  if (score >= 60) return "bg-yellow-500";
-  return "bg-red-500";
-}
-
 const scoreLabels: { key: keyof Scores; label: string }[] = [
   { key: "storyClarity", label: "Story Clarity" },
   { key: "regionalMarketFit", label: "Regional Market Fit" },
   { key: "tractionCredibility", label: "Traction Credibility" },
 ];
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
 export default function ScoreCards({ scores, overallScore }: ScoreCardsProps) {
+  const shouldReduce = useReducedMotion();
+
   return (
     <section className="space-y-6">
-      <div className="flex items-center gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: shouldReduce ? 0 : 0.5, ease }}
+        className="flex items-center gap-3"
+      >
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20">
+          <BarChart3 className="w-4 h-4 text-purple-400" />
+        </div>
         <h2 className="text-2xl font-bold">Score Breakdown</h2>
-        <div className="h-px flex-1 bg-gradient-to-r from-purple-500/50 to-transparent" />
-      </div>
-
-      <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-        <div className="mb-2 flex items-baseline justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            Overall Score
-          </span>
-          <span className={`text-3xl font-bold ${getScoreColor(overallScore)}`}>
-            {overallScore}
-            <span className="text-base font-normal text-muted-foreground">/100</span>
-          </span>
-        </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-          <div
-            className={`h-full rounded-full transition-all ${getBarColor(overallScore)}`}
-            style={{ width: `${overallScore}%` }}
-          />
-        </div>
-      </div>
+        <div className="h-px flex-1 bg-gradient-to-r from-purple-500/30 to-transparent" />
+      </motion.div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        {scoreLabels.map(({ key, label }) => {
+        {scoreLabels.map(({ key, label }, i) => {
           const value = scores[key];
           return (
-            <div
+            <motion.div
               key={key}
-              className="rounded-xl border border-white/10 bg-white/5 p-5"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{
+                duration: shouldReduce ? 0 : 0.5,
+                delay: i * 0.1,
+                ease,
+              }}
+              className="rounded-2xl border border-white/[0.06] bg-white/[0.01] p-6 flex flex-col items-center gap-3"
             >
-              <div className="mb-3 flex items-baseline justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  {label}
-                </span>
-                <span className={`text-xl font-bold ${getScoreColor(value)}`}>
-                  {value}
-                </span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className={`h-full rounded-full transition-all ${getBarColor(value)}`}
-                  style={{ width: `${value}%` }}
-                />
-              </div>
-            </div>
+              <AnimatedScoreRing score={value} size={80} strokeWidth={4} label={label} />
+            </motion.div>
           );
         })}
       </div>
