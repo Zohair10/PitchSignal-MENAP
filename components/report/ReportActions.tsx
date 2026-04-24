@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { EvaluationReport } from "@/lib/schemas/evaluationReport.schema";
 import { buildMarkdownReport } from "@/lib/utils/markdownReport";
-import { Copy, Download, Link2, Check, ArrowRight } from "lucide-react";
+import { Copy, Download, Link2, Check, ArrowRight, Printer } from "lucide-react";
 
 interface ReportActionsProps {
   report: EvaluationReport;
@@ -25,9 +25,9 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:text-white/80 hover:bg-white/[0.05] hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
+      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 cursor-pointer"
     >
-      {done ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Icon className="w-3.5 h-3.5" />}
+      {done ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Icon className="w-3.5 h-3.5" />}
       {done ? "Copied!" : label}
     </button>
   );
@@ -73,13 +73,14 @@ export default function ReportActions({ report }: ReportActionsProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: shouldReduce ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-white/[0.06]"
+      className="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-gray-200"
     >
       <ActionButton onClick={handleCopyReport} label="Copy Report" icon={Copy} done={copiedReport} />
       <ActionButton onClick={handleDownload} label="Download Markdown" icon={Download} />
+      <ActionButton onClick={() => window.print()} label="Print Report" icon={Printer} />
       <ActionButton onClick={handleShareLink} label="Share Link" icon={Link2} done={copiedLink} />
       <Link href="/evaluate">
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-sm text-white font-medium hover:opacity-90 transition-opacity duration-200 cursor-pointer">
+        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-sm text-white font-medium hover:opacity-90 transition-opacity duration-200 cursor-pointer">
           New Analysis
           <ArrowRight className="w-3.5 h-3.5" />
         </button>

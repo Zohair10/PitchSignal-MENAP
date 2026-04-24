@@ -36,6 +36,7 @@ export function FounderForm() {
   const [agentLogEntries, setAgentLogEntries] = useState<AgentLogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedDemo, setSelectedDemo] = useState<string>("paybridge");
+  const [startTime, setStartTime] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   function updateField(field: keyof FounderInput, value: string | null) {
@@ -62,6 +63,7 @@ export function FounderForm() {
 
     setIsLoading(true);
     setAgentLogEntries([]);
+    setStartTime(Date.now());
 
     const abortController = new AbortController();
     abortRef.current = abortController;
@@ -147,17 +149,31 @@ export function FounderForm() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 bg-[#0a0e1a]/95 backdrop-blur-xl flex items-center justify-center p-6"
+            className="fixed inset-0 z-50 bg-white/95 backdrop-blur-xl flex items-center justify-center p-6"
           >
             <div className="w-full max-w-lg space-y-6">
               <div className="text-center space-y-2">
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="w-6 h-6 text-purple-400" />
-                  <h2 className="text-2xl font-semibold">Analyzing your pitch...</h2>
+                  <Sparkles className="w-6 h-6 text-orange-500" />
+                  <h2 className="text-2xl font-semibold text-gray-900">Analyzing your pitch...</h2>
                 </div>
-                <p className="text-white/40 text-sm">Our AI agents are reviewing your startup. This takes 15-30 seconds.</p>
+                <p className="text-gray-400 text-sm">Our AI agents are reviewing your startup. This takes 15-30 seconds.</p>
               </div>
-              <AgentLog entries={agentLogEntries} totalSteps={6} />
+              <AgentLog entries={agentLogEntries} totalSteps={6} startTime={startTime ?? undefined} />
+              {agentLogEntries.filter((e) => e.step >= 0).length < 6 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    abortRef.current?.abort();
+                    setIsLoading(false);
+                    setAgentLogEntries([]);
+                    setStartTime(null);
+                  }}
+                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  Cancel analysis
+                </button>
+              )}
             </div>
           </motion.div>
         )}
@@ -167,7 +183,7 @@ export function FounderForm() {
         {/* Autofill + Error */}
         <div className="flex items-center gap-3 justify-end">
           <Select value={selectedDemo} onValueChange={(val) => val && setSelectedDemo(val)}>
-            <SelectTrigger className="w-[200px] bg-white/[0.03] border-white/[0.08] text-sm text-white/50 h-9">
+            <SelectTrigger className="w-[200px] bg-gray-50 border-gray-200 text-sm text-gray-500 h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -179,7 +195,7 @@ export function FounderForm() {
           <button
             type="button"
             onClick={handleAutofill}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80 transition-all duration-200 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 transition-all duration-200 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
             Autofill
@@ -193,41 +209,41 @@ export function FounderForm() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/[0.05] p-4"
+              className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
             >
-              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-              <p className="text-sm text-red-300">{error}</p>
+              <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+              <p className="text-sm text-red-600">{error}</p>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Main input card */}
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.01] p-6 md:p-8 space-y-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 space-y-6">
           <div>
-            <h2 className="text-lg font-semibold text-white">Submit Your Pitch</h2>
-            <p className="text-xs text-white/30 mt-1">Our AI will extract all key details and identify gaps automatically.</p>
+            <h2 className="text-lg font-semibold text-gray-900">Submit Your Pitch</h2>
+            <p className="text-sm text-gray-500 mt-1">Our AI will extract all key details and identify gaps automatically.</p>
           </div>
 
           {/* Startup name + Country row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm text-white/50">
-                Startup Name <span className="text-purple-400">*</span>
+              <label className="text-sm text-gray-500">
+                Startup Name <span className="text-orange-500">*</span>
               </label>
               <Input
                 value={form.startupName}
                 onChange={(e) => updateField("startupName", e.target.value)}
                 placeholder="e.g. PayBridge"
                 required
-                className="bg-white/[0.03] border-white/[0.08] focus:border-purple-500/50"
+                className="bg-gray-50 border-gray-200 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm text-white/50">
-                Country <span className="text-purple-400">*</span>
+              <label className="text-sm text-gray-500">
+                Country <span className="text-orange-500">*</span>
               </label>
               <Select value={form.country} onValueChange={(val) => updateField("country", val)}>
-                <SelectTrigger className="bg-white/[0.03] border-white/[0.08]">
+                <SelectTrigger className="bg-gray-50 border-gray-200">
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -242,10 +258,10 @@ export function FounderForm() {
 
           {/* Pitch text */}
           <div className="space-y-1.5">
-            <label className="text-sm text-white/50">
+            <label className="text-sm text-gray-500">
               <div className="flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5" />
-                Pitch Text <span className="text-purple-400">*</span>
+                Pitch Text <span className="text-orange-500">*</span>
               </div>
             </label>
             <Textarea
@@ -254,9 +270,11 @@ export function FounderForm() {
               placeholder="Paste your full pitch text here... Include your problem, solution, target market, business model, traction, team, and funding ask. Our AI will extract the key details."
               rows={12}
               required
-              className="text-sm bg-white/[0.03] border-white/[0.08] focus:border-purple-500/50 min-h-[200px]"
+              className="text-sm bg-gray-50 border-gray-200 focus:border-orange-400 min-h-[200px]"
             />
-            <p className="text-xs text-white/20">Minimum 20 characters. The more detail you provide, the better the analysis.</p>
+            <p className={`text-sm ${form.pitchText.length < 20 ? "text-amber-500" : "text-gray-400"}`}>
+              {form.pitchText.length} characters (minimum 20). The more detail you provide, the better the analysis.
+            </p>
           </div>
         </div>
 
@@ -266,8 +284,8 @@ export function FounderForm() {
           disabled={isLoading}
           className="group relative w-full flex items-center justify-center gap-2 h-14 rounded-xl text-lg font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
         >
-          <span className="absolute inset-0 bg-gradient-to-r from-purple-600 via-violet-600 to-blue-600" />
-          <span className="absolute inset-0 bg-gradient-to-r from-purple-500 via-violet-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <span className="absolute inset-0 bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500" />
+          <span className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-400 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <span className="relative">Analyze My Pitch</span>
           <ArrowRight className="relative w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5" />
         </button>

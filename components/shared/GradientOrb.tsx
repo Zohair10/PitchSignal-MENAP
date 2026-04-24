@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 
 export function GradientOrb({
-  color = "rgba(139, 92, 246, 0.15)",
+  color = "rgba(251, 146, 60, 0.08)",
   size = 400,
   className = "",
 }: {

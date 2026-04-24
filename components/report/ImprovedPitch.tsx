@@ -24,11 +24,11 @@ export default function ImprovedPitch({ pitch }: ImprovedPitchProps) {
         transition={{ duration: shouldReduce ? 0 : 0.5, ease }}
         className="flex items-center gap-3"
       >
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20">
-          <Sparkles className="w-4 h-4 text-amber-400" />
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 border border-amber-200">
+          <Sparkles className="w-4 h-4 text-amber-500" />
         </div>
-        <h2 className="text-2xl font-bold">Improved Pitch</h2>
-        <div className="h-px flex-1 bg-gradient-to-r from-amber-500/30 to-transparent" />
+        <h2 className="text-2xl font-bold text-gray-900">Improved Pitch</h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-amber-300 to-transparent" />
       </motion.div>
 
       <motion.div
@@ -36,13 +36,13 @@ export default function ImprovedPitch({ pitch }: ImprovedPitchProps) {
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true, margin: "-30px" }}
         transition={{ duration: shouldReduce ? 0 : 0.5, ease }}
-        className="rounded-2xl bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 p-px"
+        className="rounded-2xl bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 p-px"
       >
-        <div className="rounded-[15px] bg-[#0c1022] p-6">
-          <p className="mb-2 text-xs font-medium tracking-widest text-purple-400/70 uppercase">
+        <div className="rounded-[15px] bg-white p-6">
+          <p className="mb-2 text-sm font-medium tracking-widest text-orange-500 uppercase">
             One-Liner
           </p>
-          <p className="text-lg md:text-xl font-semibold leading-relaxed text-white">
+          <p className="text-lg md:text-xl font-semibold leading-relaxed text-gray-900">
             &ldquo;{pitch.oneLiner}&rdquo;
           </p>
         </div>
@@ -53,12 +53,12 @@ export default function ImprovedPitch({ pitch }: ImprovedPitchProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-30px" }}
         transition={{ duration: shouldReduce ? 0 : 0.5, delay: 0.1, ease }}
-        className="rounded-2xl border border-white/[0.06] bg-white/[0.01] p-6"
+        className="rounded-2xl border border-gray-200 bg-gray-50 p-6"
       >
-        <p className="mb-2 text-xs font-medium tracking-widest text-white/30 uppercase">
+        <p className="mb-2 text-sm font-medium tracking-widest text-gray-400 uppercase">
           Elevator Pitch
         </p>
-        <p className="text-base leading-relaxed text-white/70">{pitch.elevatorPitch}</p>
+        <p className="text-base leading-relaxed text-gray-600">{pitch.elevatorPitch}</p>
       </motion.div>
     </section>
   );

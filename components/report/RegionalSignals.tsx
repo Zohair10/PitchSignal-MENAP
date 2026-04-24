@@ -22,11 +22,11 @@ export default function RegionalSignals({ signals }: RegionalSignalsProps) {
         transition={{ duration: shouldReduce ? 0 : 0.5, ease }}
         className="flex items-center gap-3"
       >
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-          <Globe2 className="w-4 h-4 text-cyan-400" />
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-100 border border-teal-200">
+          <Globe2 className="w-4 h-4 text-teal-600" />
         </div>
-        <h2 className="text-2xl font-bold">Regional Signals Used</h2>
-        <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/30 to-transparent" />
+        <h2 className="text-2xl font-bold text-gray-900">Regional Signals Used</h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-teal-300 to-transparent" />
       </motion.div>
 
       <motion.p
@@ -34,7 +34,7 @@ export default function RegionalSignals({ signals }: RegionalSignalsProps) {
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: shouldReduce ? 0 : 0.4 }}
-        className="text-sm text-white/40"
+        className="text-sm text-gray-500"
       >
         These regional data points and market signals powered the analysis.
       </motion.p>
@@ -50,7 +50,7 @@ export default function RegionalSignals({ signals }: RegionalSignalsProps) {
           <Badge
             key={i}
             variant="outline"
-            className="border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.05] transition-colors"
+            className="border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
           >
             {signal}
           </Badge>

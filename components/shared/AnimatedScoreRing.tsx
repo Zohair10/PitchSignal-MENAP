@@ -38,7 +38,7 @@ export function AnimatedScoreRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke="rgba(0,0,0,0.06)"
           strokeWidth={strokeWidth}
         />
         <motion.circle
@@ -64,7 +64,7 @@ export function AnimatedScoreRing({
       </svg>
       <div className="absolute flex flex-col items-center justify-center">
         <motion.span
-          className={`${size >= 120 ? "text-3xl" : "text-xl"} font-bold text-white`}
+          className={`${size >= 120 ? "text-3xl" : "text-xl"} font-bold text-gray-900`}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: shouldReduce ? 0 : 0.5, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -72,7 +72,7 @@ export function AnimatedScoreRing({
           {score}
         </motion.span>
         {label && (
-          <span className={`${size >= 120 ? "text-xs" : "text-[10px]"} font-medium tracking-wider text-white/50 uppercase text-center leading-tight mt-0.5 px-1`}>
+          <span className={`${size >= 120 ? "text-xs" : "text-xs"} font-medium tracking-wider text-gray-500 uppercase text-center leading-tight mt-0.5 px-1`}>
             {label}
           </span>
         )}

@@ -36,6 +36,10 @@ export function PdfUpload({ onTextExtracted }: PdfUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFileSelect(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      setError("PDF must be under 10MB.");
+      return;
+    }
     if (file.type !== "application/pdf") {
       setError("Please select a PDF file.");
       return;
@@ -93,34 +97,34 @@ export function PdfUpload({ onTextExtracted }: PdfUploadProps) {
         onClick={() => !isUploading && fileInputRef.current?.click()}
         className={`border border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
           isUploading
-            ? "border-purple-500/20 bg-purple-500/[0.03]"
+            ? "border-orange-200 bg-orange-50"
             : fileName
-            ? "border-green-500/20 bg-green-500/[0.03]"
-            : "border-white/[0.08] hover:border-white/[0.15] bg-white/[0.01] hover:bg-white/[0.03]"
+            ? "border-green-200 bg-green-50"
+            : "border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-white"
         }`}
       >
         <input ref={fileInputRef} type="file" accept="application/pdf" onChange={handleInputChange} className="hidden" />
         {isUploading ? (
           <div className="space-y-2">
-            <Loader2 className="w-6 h-6 text-purple-400 mx-auto animate-spin" />
-            <p className="text-sm text-white/50">Reading PDF with AI vision...</p>
-            <p className="text-xs text-white/25">Rendering pages and extracting text via OCR</p>
+            <Loader2 className="w-6 h-6 text-orange-500 mx-auto animate-spin" />
+            <p className="text-sm text-gray-500">Reading PDF with AI vision...</p>
+            <p className="text-sm text-gray-500">Rendering pages and extracting text via OCR</p>
           </div>
         ) : fileName ? (
           <div className="space-y-1">
-            <FileCheck className="w-6 h-6 text-green-400 mx-auto" />
-            <p className="text-sm text-green-400">{fileName}</p>
-            <p className="text-xs text-white/30">Click or drop another PDF to replace</p>
+            <FileCheck className="w-6 h-6 text-green-600 mx-auto" />
+            <p className="text-sm text-green-600">{fileName}</p>
+            <p className="text-sm text-gray-400">Click or drop another PDF to replace</p>
           </div>
         ) : (
           <div className="space-y-1">
-            <Upload className="w-6 h-6 text-white/30 mx-auto" />
-            <p className="text-sm text-white/50">Upload a pitch deck PDF</p>
-            <p className="text-xs text-white/25">AI vision will read your slides — even image-based decks</p>
+            <Upload className="w-6 h-6 text-gray-400 mx-auto" />
+            <p className="text-sm text-gray-500">Upload a pitch deck PDF</p>
+            <p className="text-sm text-gray-400">AI vision will read your slides — even image-based decks</p>
           </div>
         )}
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }
