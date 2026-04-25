@@ -4,6 +4,7 @@ import Nav from "@/components/site/Nav"
 import Hero from "@/components/site/Hero"
 import HowItWorks from "@/components/site/HowItWorks"
 import Features from "@/components/site/Features"
+import DiagnosticsTelemetry from "@/components/site/DiagnosticsTelemetry"
 import SampleReport from "@/components/site/SampleReport"
 import Footer from "@/components/site/Footer"
 
@@ -33,6 +34,7 @@ export default function LandingPage() {
         <Hero />
         <HowItWorks />
         <Features />
+        <DiagnosticsTelemetry />
         <SampleReport />
       </main>
       <Footer />
