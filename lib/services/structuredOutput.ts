@@ -1,35 +1,50 @@
 import { getModel } from "./model";
 import { z } from "zod";
 
+const MAX_RETRIES = 2;
+
 export async function callStructuredModel<T extends z.ZodType>(
   systemPrompt: string,
   userPrompt: string,
   schema: T
 ): Promise<z.infer<T>> {
-  const model = getModel();
+  let lastError: unknown;
 
-  const response = await model.invoke([
-    { role: "system", content: systemPrompt },
-    { role: "user", content: userPrompt },
-  ]);
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const model = getModel();
 
-  const text = response.content as string;
+      const response = await model.invoke([
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ]);
 
-  // Extract JSON from the response (handle markdown code blocks)
-  let jsonStr = text;
-  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1].trim();
-  }
+      const text = response.content as string;
 
-  // Try to find JSON object in the text
-  if (!jsonStr.startsWith("{")) {
-    const braceMatch = text.match(/\{[\s\S]*\}/);
-    if (braceMatch) {
-      jsonStr = braceMatch[0];
+      // Extract JSON from the response (handle markdown code blocks)
+      let jsonStr = text;
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1].trim();
+      }
+
+      // Try to find JSON object in the text
+      if (!jsonStr.startsWith("{")) {
+        const braceMatch = text.match(/\{[\s\S]*\}/);
+        if (braceMatch) {
+          jsonStr = braceMatch[0];
+        }
+      }
+
+      const parsed = JSON.parse(jsonStr);
+      return schema.parse(parsed);
+    } catch (err) {
+      lastError = err;
+      if (attempt < MAX_RETRIES) {
+        console.warn(`callStructuredModel attempt ${attempt + 1} failed, retrying...`, err instanceof Error ? err.message : err);
+      }
     }
   }
 
-  const parsed = JSON.parse(jsonStr);
-  return schema.parse(parsed);
+  throw lastError;
 }

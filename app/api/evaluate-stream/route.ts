@@ -70,7 +70,13 @@ export async function POST(request: NextRequest) {
         // Step 0-1: Intake
         send("step", stepEvent(0));
         send("step", stepEvent(1));
-        state = await runIntakeChain(state);
+        try {
+          state = await runIntakeChain(state);
+        } catch (err) {
+          console.error("Intake chain failed:", err);
+          // If intake fails, we can't continue — throw to fallback
+          throw new Error(`Intake failed: ${err instanceof Error ? err.message : "unknown error"}`);
+        }
 
         // Inject sector knowledge
         const detectedSector = state.intakeProfile?.sectorCategory || "Other";
@@ -91,14 +97,24 @@ export async function POST(request: NextRequest) {
 
         // Step 3: Story + Market review
         send("step", stepEvent(3));
-        state = await runStoryReviewChain(state);
+        try {
+          state = await runStoryReviewChain(state);
+        } catch (err) {
+          console.error("Story review chain failed:", err);
+          // Continue with defaults if story review fails
+        }
 
         // Send story insight
         if (state.storyReview) {
           send("step", stepEvent(3, `Clarity: ${state.storyReview.clarityScore}/100. ${state.storyReview.strengths.length} strengths, ${state.storyReview.weaknesses.length} weaknesses.`));
         }
 
-        state = await runMarketTractionChain(state);
+        try {
+          state = await runMarketTractionChain(state);
+        } catch (err) {
+          console.error("Market/traction chain failed:", err);
+          // Continue with defaults
+        }
 
         // Send market insight
         if (state.marketTractionReview) {
@@ -108,7 +124,12 @@ export async function POST(request: NextRequest) {
 
         // Step 4: Objections
         send("step", stepEvent(4));
-        state = await runObjectionsChain(state);
+        try {
+          state = await runObjectionsChain(state);
+        } catch (err) {
+          console.error("Objections chain failed:", err);
+          // Continue — final memo will generate objections
+        }
 
         // Send objections insight
         if (state.investorObjections) {
@@ -126,20 +147,29 @@ export async function POST(request: NextRequest) {
         send("step", stepEvent(5, `Report complete. Score: ${state.finalReport.overallScore}/100.`));
         send("result", { report: state.finalReport });
       } catch (error) {
-        console.error("Pipeline error, using fallback:", error);
+        console.error("Pipeline error:", error);
         send("step", {
           step: -1,
-          message: "Using fallback analysis (API issue)",
+          message: `Analysis error: ${error instanceof Error ? error.message : "Unknown error"}. Retrying with simpler pipeline...`,
           agent: "System",
           timestamp: new Date().toISOString(),
         });
-        send("result", {
-          report: {
-            ...PAYBRIDGE_FALLBACK_REPORT,
-            startupName: founderInput.startupName,
-            verdict: "Analysis incomplete — showing sample report",
-          },
-        });
+
+        // Try the sync endpoint as a last resort before falling back to hardcoded
+        try {
+          const { evaluateStartup } = await import("@/lib/services/evaluateStartup");
+          const report = await evaluateStartup(founderInput);
+          send("result", { report });
+        } catch (fallbackErr) {
+          console.error("Sync fallback also failed:", fallbackErr);
+          send("result", {
+            report: {
+              ...PAYBRIDGE_FALLBACK_REPORT,
+              startupName: founderInput.startupName,
+              verdict: "Analysis incomplete — showing sample report",
+            },
+          });
+        }
       } finally {
         controller.close();
       }
