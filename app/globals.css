@@ -186,6 +186,40 @@
     background-size: 48px 48px;
     mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
   }
+
+  /* Shimmer border for active agent nodes */
+  .shimmer-border {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-border::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0%,
+      hsl(22 100% 50% / 0.35) 10%,
+      transparent 20%
+    );
+    border-radius: inherit;
+    animation: shimmer-spin 2s linear infinite;
+    z-index: 0;
+  }
+  .shimmer-border > * {
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes shimmer-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Breathing glow for active agents */
+  @keyframes agent-glow {
+    0%, 100% { box-shadow: 0 0 20px 0px hsl(22 100% 50% / 0.15); }
+    50% { box-shadow: 0 0 40px 8px hsl(22 100% 50% / 0.35); }
+  }
+  .animate-agent-glow { animation: agent-glow 2s ease-in-out infinite; }
 }
 
 @media print {

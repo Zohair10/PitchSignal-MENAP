@@ -16,6 +16,13 @@ interface StepEvent {
   agent: string;
   timestamp: string;
   insight?: string;
+  status?: "started" | "completed";
+  scores?: {
+    storyClarity?: number;
+    regionalMarketFit?: number;
+    tractionCredibility?: number;
+    overallScore?: number;
+  };
 }
 
 const STEPS: Omit<StepEvent, "timestamp" | "insight">[] = [
@@ -56,9 +63,9 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(sseEvent(event, data)));
       }
 
-      function stepEvent(stepIndex: number, insight?: string): StepEvent {
+      function stepEvent(stepIndex: number, insight?: string, status?: "started" | "completed"): StepEvent {
         const s = STEPS[stepIndex];
-        return { ...s, timestamp: new Date().toISOString(), insight };
+        return { ...s, timestamp: new Date().toISOString(), insight, status };
       }
 
       try {
@@ -68,8 +75,8 @@ export async function POST(request: NextRequest) {
         };
 
         // Step 0-1: Intake
-        send("step", stepEvent(0));
-        send("step", stepEvent(1));
+        send("step", stepEvent(0, undefined, "started"));
+        send("step", stepEvent(1, undefined, "started"));
         try {
           state = await runIntakeChain(state);
         } catch (err) {
@@ -83,30 +90,27 @@ export async function POST(request: NextRequest) {
         state.detectedSector = detectedSector;
         state.sectorKnowledge = getSectorKnowledge(detectedSector);
 
-        // Send intake insight
+        // Send intake completed
+        send("step", stepEvent(0, undefined, "completed"));
         const intake = state.intakeProfile;
         if (intake) {
           const fieldCount = Object.values(intake.extractedFields).filter(Boolean).length;
           const missingCount = intake.missingFields.length;
-          send("step", stepEvent(1, `Detected: ${detectedSector} startup. Loaded ${detectedSector}-specific evaluation criteria. Extracted ${fieldCount} fields.${missingCount > 0 ? ` ${missingCount} missing.` : ""}`));
+          send("step", stepEvent(1, `Detected: ${detectedSector} startup. Loaded ${detectedSector}-specific evaluation criteria. Extracted ${fieldCount} fields.${missingCount > 0 ? ` ${missingCount} missing.` : ""}`, "completed"));
         }
 
         // Step 2: Knowledge pack
         state.menapKnowledgePack = getKnowledgePack(founderInput.country);
-        send("step", stepEvent(2));
+        send("step", stepEvent(2, undefined, "started"));
+        send("step", stepEvent(2, undefined, "completed"));
 
         // Step 3: Story + Market review
-        send("step", stepEvent(3));
+        send("step", stepEvent(3, undefined, "started"));
         try {
           state = await runStoryReviewChain(state);
         } catch (err) {
           console.error("Story review chain failed:", err);
           // Continue with defaults if story review fails
-        }
-
-        // Send story insight
-        if (state.storyReview) {
-          send("step", stepEvent(3, `Clarity: ${state.storyReview.clarityScore}/100. ${state.storyReview.strengths.length} strengths, ${state.storyReview.weaknesses.length} weaknesses.`));
         }
 
         try {
@@ -116,14 +120,35 @@ export async function POST(request: NextRequest) {
           // Continue with defaults
         }
 
-        // Send market insight
-        if (state.marketTractionReview) {
-          const mr = state.marketTractionReview;
-          send("step", stepEvent(3, `Market fit: ${mr.regionalMarketFit}/100. ${mr.regionalRedFlags.length} regional red flags.`));
+        // Send step 3 completed with scores
+        {
+          const storyInsight = state.storyReview
+            ? `Clarity: ${state.storyReview.clarityScore}/100. ${state.storyReview.strengths.length} strengths, ${state.storyReview.weaknesses.length} weaknesses.`
+            : undefined;
+          const marketInsight = state.marketTractionReview
+            ? `Market fit: ${state.marketTractionReview.regionalMarketFit}/100. ${state.marketTractionReview.regionalRedFlags.length} regional red flags.`
+            : undefined;
+          const combinedInsight = [storyInsight, marketInsight].filter(Boolean).join(" ");
+          send("step", stepEvent(3, combinedInsight || undefined, "completed"));
+          // Send scores for progressive display
+          if (state.storyReview || state.marketTractionReview) {
+            send("step", {
+              step: 3,
+              message: "Scores ready",
+              agent: "Story & Market Reviewer",
+              timestamp: new Date().toISOString(),
+              status: "scores",
+              scores: {
+                storyClarity: state.storyReview?.clarityScore,
+                regionalMarketFit: state.marketTractionReview?.regionalMarketFit,
+                tractionCredibility: state.marketTractionReview?.tractionCredibility,
+              },
+            });
+          }
         }
 
         // Step 4: Objections
-        send("step", stepEvent(4));
+        send("step", stepEvent(4, undefined, "started"));
         try {
           state = await runObjectionsChain(state);
         } catch (err) {
@@ -131,20 +156,33 @@ export async function POST(request: NextRequest) {
           // Continue — final memo will generate objections
         }
 
-        // Send objections insight
+        // Send objections completed
         if (state.investorObjections) {
-          send("step", stepEvent(4, `Generated ${state.investorObjections.topInvestorObjections.length} investor objections.`));
+          send("step", stepEvent(4, `Generated ${state.investorObjections.topInvestorObjections.length} investor objections.`, "completed"));
+        } else {
+          send("step", stepEvent(4, undefined, "completed"));
         }
 
         // Step 5: Final memo
-        send("step", stepEvent(5));
+        send("step", stepEvent(5, undefined, "started"));
         state = await runFinalMemoChain(state);
 
         if (!state.finalReport) {
           throw new Error("Failed to generate evaluation report");
         }
 
-        send("step", stepEvent(5, `Report complete. Score: ${state.finalReport.overallScore}/100.`));
+        send("step", stepEvent(5, `Report complete. Score: ${state.finalReport.overallScore}/100.`, "completed"));
+        // Send final score
+        send("step", {
+          step: 5,
+          message: "Final score",
+          agent: "Memo Writer",
+          timestamp: new Date().toISOString(),
+          status: "scores",
+          scores: {
+            overallScore: state.finalReport.overallScore,
+          },
+        });
         send("result", { report: state.finalReport });
       } catch (error) {
         console.error("Pipeline error:", error);

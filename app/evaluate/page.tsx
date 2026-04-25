@@ -10,6 +10,13 @@ import { DEMO_OPTIONS } from "@/lib/data/demoData";
 import { GradientOrb } from "@/components/shared/GradientOrb";
 import { Logo } from "@/components/shared/Logo";
 import {
+  AgentPipeline,
+  AGENT_PIPELINE,
+  type AgentStatus,
+  type PartialScores,
+} from "@/components/analysis/AgentPipeline";
+import type { LogEntry } from "@/components/analysis/ActivityLog";
+import {
   ArrowLeft,
   ArrowRight,
   Upload,
@@ -20,7 +27,6 @@ import {
   AlertCircle,
   Check,
   Clock,
-  Bot,
   X,
   ClipboardPaste,
 } from "lucide-react";
@@ -31,24 +37,6 @@ const COUNTRIES = [
   "Pakistan", "UAE", "Saudi Arabia", "Egypt", "Jordan", "Morocco", "Tunisia",
   "Bahrain", "Kuwait", "Oman", "Qatar", "Other",
 ];
-
-const STEPS = [
-  { step: 0, agent: "Intake Agent", message: "Reading founder input..." },
-  { step: 1, agent: "Intake Agent", message: "Extracting startup profile and key details..." },
-  { step: 2, agent: "Regional Analyst", message: "Applying MENAP knowledge pack..." },
-  { step: 3, agent: "Story & Market Reviewer", message: "Reviewing story and traction..." },
-  { step: 4, agent: "Investor Simulator", message: "Generating investor objections..." },
-  { step: 5, agent: "Memo Writer", message: "Building shareable report..." },
-] as const;
-
-const AGENT_COLORS: Record<string, string> = {
-  "Intake Agent": "from-orange-500 to-amber-500",
-  "Regional Analyst": "from-amber-500 to-yellow-500",
-  "Story & Market Reviewer": "from-emerald-500 to-teal-500",
-  "Investor Simulator": "from-red-500 to-orange-500",
-  "Memo Writer": "from-orange-500 to-yellow-500",
-  "System": "from-gray-500 to-gray-400",
-};
 
 const EXTRACT_FIELDS = [
   { key: "sector", label: "Sector" },
@@ -63,14 +51,6 @@ const EXTRACT_FIELDS = [
 ] as const;
 
 type ExtractFieldKey = (typeof EXTRACT_FIELDS)[number]["key"];
-
-interface StepEntry {
-  step: number;
-  message: string;
-  agent: string;
-  timestamp: string;
-  insight?: string;
-}
 
 // ─── Heuristic Extraction ───
 
@@ -163,68 +143,6 @@ function Stepper({ current }: { current: number }) {
   );
 }
 
-// ─── Agent Stage Card ───
-
-function AgentStageCard({
-  stepInfo,
-  status,
-  insight,
-}: {
-  stepInfo: (typeof STEPS)[number];
-  status: "pending" | "active" | "done";
-  insight?: string;
-}) {
-  const gradient = AGENT_COLORS[stepInfo.agent] || "from-orange-500 to-amber-500";
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease }}
-      className={`rounded-xl border p-4 transition-all duration-300 ${
-        status === "active"
-          ? "border-orange-200 bg-orange-50/50 shadow-sm"
-          : status === "done"
-          ? "border-green-200 bg-green-50/30"
-          : "border-gray-200 bg-gray-50/50 opacity-50"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-            status === "active"
-              ? `bg-gradient-to-br ${gradient}`
-              : status === "done"
-              ? "bg-gradient-to-br from-green-500 to-emerald-500"
-              : "bg-gray-200"
-          }`}
-        >
-          {status === "active" ? (
-            <Loader2 className="w-4 h-4 text-white animate-spin" />
-          ) : status === "done" ? (
-            <Check className="w-4 h-4 text-white" />
-          ) : (
-            <Bot className="w-4 h-4 text-gray-400" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-gray-900">{stepInfo.agent}</p>
-            {status === "active" && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium">
-                Running
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-gray-500 mt-0.5">{stepInfo.message}</p>
-          {insight && (
-            <p className="text-sm text-orange-500/80 mt-1">{insight}</p>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 // ─── Main Page Component ───
 
 export default function EvaluatePage() {
@@ -254,8 +172,11 @@ export default function EvaluatePage() {
   );
 
   // Step 3: Analyzing
-  const [stepEntries, setStepEntries] = useState<StepEntry[]>([]);
+  const [stepEntries, setStepEntries] = useState<LogEntry[]>([]);
   const [stepInsights, setStepInsights] = useState<Record<number, string>>({});
+  const [agentStatuses, setAgentStatuses] = useState<Record<number, AgentStatus>>({});
+  const [partialScores, setPartialScores] = useState<PartialScores>({});
+  const [detectedSector, setDetectedSector] = useState<string | undefined>(undefined);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
   const [elapsed, setElapsed] = useState(0);
@@ -359,6 +280,9 @@ export default function EvaluatePage() {
     setIsAnalyzing(true);
     setStepEntries([]);
     setStepInsights({});
+    setAgentStatuses({});
+    setPartialScores({});
+    setDetectedSector(undefined);
     setStartTime(Date.now());
     setElapsed(0);
     setError(null);
@@ -407,9 +331,30 @@ export default function EvaluatePage() {
             try {
               const parsed = JSON.parse(payload);
               if (currentEvent === "step" && parsed.step !== undefined && parsed.message) {
-                setStepEntries((prev) => [...prev, parsed as StepEntry]);
+                setStepEntries((prev) => [...prev, parsed as LogEntry]);
                 if (parsed.insight) {
                   setStepInsights((prev) => ({ ...prev, [parsed.step]: parsed.insight }));
+                }
+
+                // Handle new status field
+                if (parsed.status === "started") {
+                  setAgentStatuses((prev) => ({ ...prev, [parsed.step]: "active" }));
+                } else if (parsed.status === "completed") {
+                  setAgentStatuses((prev) => ({ ...prev, [parsed.step]: "done" }));
+                } else if (parsed.status === "scores" && parsed.scores) {
+                  // Progressive scores event
+                  setPartialScores((prev) => ({ ...prev, ...parsed.scores }));
+                } else if (!parsed.status && parsed.step >= 0) {
+                  // Backward compat: no status field, infer from step entries
+                  // Just add to log, status inferred from agentStatuses
+                }
+
+                // Detect sector from insight text
+                if (parsed.insight && parsed.insight.includes("Detected:")) {
+                  const sectorMatch = parsed.insight.match(/Detected:\s*(\w[\w\s\/]*?)(?:\s+startup)/i);
+                  if (sectorMatch) {
+                    setDetectedSector(sectorMatch[1].trim());
+                  }
                 }
               }
               if (currentEvent === "result" && parsed.report) {
@@ -456,6 +401,9 @@ export default function EvaluatePage() {
     setIsAnalyzing(false);
     setStepEntries([]);
     setStepInsights({});
+    setAgentStatuses({});
+    setPartialScores({});
+    setDetectedSector(undefined);
     setCurrentStep(1);
   }
 
@@ -776,12 +724,12 @@ export default function EvaluatePage() {
   }
 
   function renderStep3() {
-    const completedCount = stepEntries.filter((e) => e.step >= 0).length;
-    const progress = Math.min((completedCount / 6) * 100, 100);
-    const isComplete = completedCount >= 6;
+    const completedSteps = Object.values(agentStatuses).filter((s) => s === "done").length;
+    const progress = Math.min((completedSteps / 6) * 100, 100);
+    const isComplete = completedSteps >= 6;
 
-    // Determine which steps are visible (show all once analysis starts)
-    const visibleSteps = STEPS;
+    // Filter out internal "scores" events from visible log
+    const visibleEntries = stepEntries.filter((e) => e.message !== "Scores ready" && e.message !== "Final score");
 
     return (
       <motion.div
@@ -835,74 +783,15 @@ export default function EvaluatePage() {
           </div>
         </div>
 
-        {/* Agent stage cards */}
-        <div className="grid gap-3">
-          {visibleSteps.map((stepInfo) => {
-            const matchingEntries = stepEntries.filter((e) => e.step === stepInfo.step);
-            const isActive = matchingEntries.length > 0 && !isComplete && stepEntries[stepEntries.length - 1]?.step === stepInfo.step;
-            const isDone = matchingEntries.length > 0 && (!isActive || isComplete);
-            // Find if any earlier entry is active
-            const latestEntry = stepEntries[stepEntries.length - 1];
-            const isCurrentlyActive = latestEntry?.step === stepInfo.step && !isComplete;
-
-            const status: "pending" | "active" | "done" = isCurrentlyActive
-              ? "active"
-              : matchingEntries.length > 0
-              ? "done"
-              : "pending";
-
-            const insight = stepInsights[stepInfo.step];
-
-            return (
-              <AgentStageCard
-                key={stepInfo.step}
-                stepInfo={stepInfo}
-                status={status}
-                insight={insight}
-              />
-            );
-          })}
-        </div>
-
-        {/* Log entries */}
-        {stepEntries.length > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 max-h-[200px] overflow-y-auto">
-            <div className="p-4 space-y-0">
-              <AnimatePresence initial={false}>
-                {stepEntries.map((entry, i) => (
-                  <motion.div
-                    key={`${entry.step}-${i}`}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className={`flex items-start gap-3 py-2.5 ${
-                      i < stepEntries.length - 1 ? "border-b border-gray-100" : ""
-                    }`}
-                  >
-                    <div className="shrink-0 mt-0.5 w-5 h-5 rounded-md bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-600">{entry.message}</p>
-                      {entry.insight && (
-                        <p className="text-sm text-orange-500/70 mt-0.5">{entry.insight}</p>
-                      )}
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <div className="flex items-center gap-1 text-xs text-gray-400">
-                          <Bot className="w-2.5 h-2.5" />
-                          <span>{entry.agent}</span>
-                        </div>
-                        <span className="text-xs text-gray-400 tabular-nums">
-                          {new Date(entry.timestamp).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
+        {/* Agent Pipeline */}
+        <AgentPipeline
+          agentStatuses={agentStatuses}
+          stepInsights={stepInsights}
+          partialScores={partialScores}
+          stepEntries={visibleEntries}
+          sector={detectedSector}
+          isComplete={isComplete}
+        />
 
         {/* Cancel button */}
         {!isComplete && (
@@ -947,7 +836,7 @@ export default function EvaluatePage() {
 
       {/* Main content */}
       <main className="relative z-10 flex-1 w-full px-6 py-8 pb-20">
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className={`mx-auto space-y-8 ${currentStep === 2 ? "max-w-5xl" : "max-w-2xl"}`}>
           {/* Header */}
           {!isAnalyzing && (
             <div className="text-center space-y-2">
