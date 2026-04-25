@@ -21,11 +21,17 @@ ${JSON.stringify(state.menapKnowledgePack, null, 2)}
 Evaluation Rules:
 - Waitlist-only traction: penalty -15
 - No distribution strategy: penalty -15
-- No fintech regulatory awareness: penalty -10
 - Has pilot users: bonus +10
 - Has revenue: bonus +15
-
-Be strict about waitlist-only traction, missing distribution strategy, lack of willingness-to-pay evidence, and fintech regulatory gaps.
+${state.sectorKnowledge ? `
+Sector-Specific Criteria (${state.detectedSector}):
+Focus: ${state.sectorKnowledge.evaluationLens}
+Sector Red Flags: ${state.sectorKnowledge.redFlags.join("; ")}
+Investor Expectations: ${state.sectorKnowledge.investorExpectations.join("; ")}
+MENAP Nuances: ${state.sectorKnowledge.regionalNuances.join("; ")}
+Bonus Signals: ${state.sectorKnowledge.bonusSignals.join("; ")}
+` : ""}
+Be strict about waitlist-only traction, missing distribution strategy, lack of willingness-to-pay evidence, and sector-specific gaps.
 
 Return ONLY the JSON object.`,
     MarketTractionOutputSchema

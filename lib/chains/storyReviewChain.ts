@@ -24,6 +24,10 @@ Consider:
 
 Be critical but fair. Score 70+ means clear and well-structured. Below 50 means confusing, generic, or inconsistent.
 
+${state.sectorKnowledge ? `Sector Context (${state.detectedSector}):
+Evaluation focus: ${state.sectorKnowledge.evaluationLens}
+Key metrics to assess clarity on: ${state.sectorKnowledge.keyMetrics.join(", ")}
+` : ""}
 Return ONLY the JSON object.`,
     StoryReviewOutputSchema
   );

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const EvaluationReportSchema = z.object({
   startupName: z.string(),
+  sectorCategory: z.string(),
   verdict: z.string(),
   overallScore: z.number().min(0).max(100),
 
@@ -17,6 +18,7 @@ export const EvaluationReportSchema = z.object({
         objection: z.string(),
         whyItMatters: z.string(),
         howToFix: z.string(),
+        severity: z.enum(["critical", "moderate", "watch"]),
       })
     )
     .length(5),

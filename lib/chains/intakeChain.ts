@@ -20,7 +20,7 @@ Extract the following from the pitch text:
 1. startupSummary: A concise startup summary (2-3 sentences)
 2. founderProfile: Type of founder this suggests
 3. keyClaims: Factual assertions made in the pitch (not aspirations)
-4. sectorCategory: Narrowed sector classification
+4. sectorCategory: Classify into EXACTLY ONE of: Fintech, SaaS, E-commerce, Healthtech, Edtech, Logistics, AgriTech, CleanTech/Energy, PropTech, AI/ML, D2C, Other. Pick the BEST fit based on the primary revenue driver.
 5. stageAssessment: Whether claimed stage matches actual progress
 6. extractedFields: An object containing any of these fields you can find in the pitch:
    - sector (e.g. "Fintech", "Healthtech", "SaaS")

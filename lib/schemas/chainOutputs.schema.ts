@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { SECTOR_CATEGORIES } from "../data/sectorKnowledgePack";
 
 // Step 1: Intake output
 export const IntakeOutputSchema = z.object({
   startupSummary: z.string(),
   founderProfile: z.string(),
   keyClaims: z.array(z.string()),
-  sectorCategory: z.string(),
+  sectorCategory: z.enum(SECTOR_CATEGORIES),
   stageAssessment: z.string(),
   extractedFields: z.object({
     sector: z.string().optional(),
@@ -55,6 +56,7 @@ export const ObjectionsOutputSchema = z.object({
         objection: z.string(),
         whyItMatters: z.string(),
         howToFix: z.string(),
+        severity: z.enum(["critical", "moderate", "watch"]),
       })
     )
     .length(5),

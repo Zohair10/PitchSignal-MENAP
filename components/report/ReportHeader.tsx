@@ -7,6 +7,7 @@ interface ReportHeaderProps {
   startupName: string;
   verdict: string;
   overallScore: number;
+  sectorCategory?: string;
 }
 
 function getVerdictColor(score: number): string {
@@ -25,7 +26,7 @@ function getVerdictBg(score: number): string {
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-export default function ReportHeader({ startupName, verdict, overallScore }: ReportHeaderProps) {
+export default function ReportHeader({ startupName, verdict, overallScore, sectorCategory }: ReportHeaderProps) {
   const shouldReduce = useReducedMotion();
 
   return (
@@ -49,6 +50,17 @@ export default function ReportHeader({ startupName, verdict, overallScore }: Rep
       >
         {startupName}
       </motion.h1>
+
+      {sectorCategory && (
+        <motion.span
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: shouldReduce ? 0 : 0.4, delay: 0.4, ease }}
+          className="inline-flex items-center px-4 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-sm font-medium text-orange-700"
+        >
+          {sectorCategory}
+        </motion.span>
+      )}
 
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}

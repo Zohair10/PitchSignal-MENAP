@@ -2,6 +2,7 @@ import { EvaluationReport } from "../schemas/evaluationReport.schema";
 
 export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
   startupName: "PayBridge",
+  sectorCategory: "Fintech",
   verdict: "Promising but needs sharper proof",
   overallScore: 72,
   scores: {
@@ -16,6 +17,7 @@ export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
         "For a fintech product in Pakistan, investors need evidence that users will trust you with real payment flows, not only signups.",
       howToFix:
         "Convert waitlist users into a small verified pilot with measurable transaction intent or LOIs.",
+      severity: "critical",
     },
     {
       objection: "The regulatory path is unclear.",
@@ -23,6 +25,7 @@ export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
         "Fintech investors will ask what can be tested now and what requires approval before scaling.",
       howToFix:
         "Add a regulatory awareness slide explaining pilot scope, licensing assumptions, and next legal review steps.",
+      severity: "critical",
     },
     {
       objection: "The UAE-to-Pakistan corridor is still too broad.",
@@ -30,6 +33,7 @@ export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
         "A broad cross-border payment claim creates execution and compliance risk.",
       howToFix:
         "Start with one narrow wedge, such as UAE-based agencies paying Pakistani freelancers.",
+      severity: "moderate",
     },
     {
       objection: "There is no live transaction data yet.",
@@ -37,6 +41,7 @@ export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
         "Payments investors need transaction evidence, retention, or repeat usage signals.",
       howToFix:
         "Run a concierge MVP or manual workflow to collect early transaction behavior.",
+      severity: "moderate",
     },
     {
       objection: "The $300K ask needs clearer milestone mapping.",
@@ -44,6 +49,7 @@ export const PAYBRIDGE_FALLBACK_REPORT: EvaluationReport = {
         "Investors want to know what proof the round will create.",
       howToFix:
         "Map the funding ask to milestones: pilot users, transaction volume, regulatory review, and MVP launch.",
+      severity: "watch",
     },
   ],
   vcMemo: {

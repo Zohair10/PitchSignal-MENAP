@@ -89,6 +89,7 @@ function ReportContent() {
         startupName={report.startupName}
         verdict={report.verdict}
         overallScore={report.overallScore}
+        sectorCategory={report.sectorCategory || report.aiInsights?.sectorCategory}
       />
       <ReportSummary report={report} />
       {report.aiInsights && <AiInsights insights={report.aiInsights} />}

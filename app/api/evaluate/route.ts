@@ -4,8 +4,10 @@ import { PAYBRIDGE_FALLBACK_REPORT } from "../../../lib/data/fallbackReport";
 import { evaluateStartup } from "../../../lib/services/evaluateStartup";
 
 export async function POST(req: Request) {
+  let startupName = "Unknown Startup";
   try {
     const body = await req.json();
+    startupName = body?.startupName || startupName;
 
     // Validate input
     const parsed = FounderInputSchema.safeParse(body);
@@ -23,7 +25,11 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Evaluation failed:", error instanceof Error ? error.message : error);
     console.error("Stack:", error instanceof Error ? error.stack : "No stack");
-    // Always return the fallback report instead of an error
-    return NextResponse.json(PAYBRIDGE_FALLBACK_REPORT);
+    // Return fallback report with the submitted startup name
+    return NextResponse.json({
+      ...PAYBRIDGE_FALLBACK_REPORT,
+      startupName,
+      verdict: "Analysis incomplete — showing sample report",
+    });
   }
 }

@@ -8,6 +8,7 @@ import { runMarketTractionChain } from "@/lib/chains/marketTractionChain";
 import { runObjectionsChain } from "@/lib/chains/objectionsChain";
 import { runFinalMemoChain } from "@/lib/chains/finalMemoChain";
 import { PAYBRIDGE_FALLBACK_REPORT } from "@/lib/data/fallbackReport";
+import { getSectorKnowledge } from "@/lib/data/sectorKnowledgePack";
 
 interface StepEvent {
   step: number;
@@ -71,12 +72,17 @@ export async function POST(request: NextRequest) {
         send("step", stepEvent(1));
         state = await runIntakeChain(state);
 
+        // Inject sector knowledge
+        const detectedSector = state.intakeProfile?.sectorCategory || "Other";
+        state.detectedSector = detectedSector;
+        state.sectorKnowledge = getSectorKnowledge(detectedSector);
+
         // Send intake insight
         const intake = state.intakeProfile;
         if (intake) {
           const fieldCount = Object.values(intake.extractedFields).filter(Boolean).length;
           const missingCount = intake.missingFields.length;
-          send("step", stepEvent(1, `Sector: ${intake.sectorCategory}. Extracted ${fieldCount} fields.${missingCount > 0 ? ` ${missingCount} missing.` : ""}`));
+          send("step", stepEvent(1, `Detected: ${detectedSector} startup. Loaded ${detectedSector}-specific evaluation criteria. Extracted ${fieldCount} fields.${missingCount > 0 ? ` ${missingCount} missing.` : ""}`));
         }
 
         // Step 2: Knowledge pack
@@ -127,7 +133,13 @@ export async function POST(request: NextRequest) {
           agent: "System",
           timestamp: new Date().toISOString(),
         });
-        send("result", { report: PAYBRIDGE_FALLBACK_REPORT });
+        send("result", {
+          report: {
+            ...PAYBRIDGE_FALLBACK_REPORT,
+            startupName: founderInput.startupName,
+            verdict: "Analysis incomplete — showing sample report",
+          },
+        });
       } finally {
         controller.close();
       }

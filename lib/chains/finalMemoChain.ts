@@ -38,10 +38,11 @@ Use these EXACT scores:
 
 Return a JSON object with these fields:
 - startupName: "${state.founderInput.startupName}"
+- sectorCategory: "${state.detectedSector || state.intakeProfile?.sectorCategory || "Other"}"
 - verdict: one of "Investor-ready" / "Promising but needs sharper proof" / "Too early" / "High risk / not ready"
 - overallScore: ${overallScore}
 - scores: object with storyClarity, regionalMarketFit, tractionCredibility
-- topInvestorObjections: array of exactly 5 objects with objection, whyItMatters, howToFix (refine the objections above)
+- topInvestorObjections: array of exactly 5 objects with objection, whyItMatters, howToFix, severity (refine the objections above, keep their severity values: "critical", "moderate", or "watch")
 - vcMemo: object with summary (2-3 sentences), whatWorks (array of 3 strings), whatBreaksThePitch (array of 3 strings)
 - topThreeFixes: array of exactly 3 objects with title, action, expectedImpact
 - improvedPitch: object with oneLiner (string) and elevatorPitch (2-sentence string)
@@ -55,6 +56,7 @@ Return ONLY the JSON object.`,
     ...state,
     finalReport: {
       ...result,
+      sectorCategory: state.detectedSector || state.intakeProfile?.sectorCategory || "Other",
       aiInsights: {
         startupSummary: state.intakeProfile?.startupSummary ?? "",
         founderProfile: state.intakeProfile?.founderProfile ?? "",

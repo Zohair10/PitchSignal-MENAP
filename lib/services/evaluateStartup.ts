@@ -2,6 +2,7 @@ import { FounderInput } from "../schemas/founderInput.schema";
 import { ReviewState } from "../schemas/reviewState.schema";
 import { EvaluationReport } from "../schemas/evaluationReport.schema";
 import { regionalKnowledgePack, RegionalKnowledgeKey } from "../data/regionalKnowledgePack";
+import { getSectorKnowledge } from "../data/sectorKnowledgePack";
 import { runIntakeChain } from "../chains/intakeChain";
 import { runStoryReviewChain } from "../chains/storyReviewChain";
 import { runMarketTractionChain } from "../chains/marketTractionChain";
@@ -27,6 +28,11 @@ export async function evaluateStartup(
 
   // Step 1: Intake
   state = await runIntakeChain(state);
+
+  // Step 1b: Inject sector knowledge
+  const detectedSector = state.intakeProfile?.sectorCategory || "Other";
+  state.detectedSector = detectedSector;
+  state.sectorKnowledge = getSectorKnowledge(detectedSector);
 
   // Step 2: Inject regional knowledge pack
   state.menapKnowledgePack = getKnowledgePack(founderInput.country);
